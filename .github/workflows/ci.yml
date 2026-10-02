@@ -1,0 +1,25 @@
+name: Compile and test Kotlin
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Kotlin compiler
+        run: |
+          curl --fail --location --retry 3 -o compiler.zip https://github.com/JetBrains/kotlin/releases/download/v2.4.20/kotlin-compiler-2.4.20.zip
+          unzip -q compiler.zip -d "$RUNNER_TEMP/kotlin"
+          echo "$RUNNER_TEMP/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Compile and test
+        run: |
+          mkdir -p build
+          kotlinc src/main/kotlin/StudyTracker.kt -jvm-target 17 -include-runtime -d build/study-tracker.jar
+          kotlinc src/main/kotlin/StudyTracker.kt src/test/kotlin/StudyTrackerTest.kt -jvm-target 17 -include-runtime -d build/tests.jar
+          java -cp build/tests.jar studytracker.StudyTrackerTestKt
+          java -jar build/study-tracker.jar --help

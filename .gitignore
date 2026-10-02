@@ -1,0 +1,8 @@
+build/
+data/
+*.jar
+*.class
+.idea/
+.gradle/
+.env
+*.tmp
